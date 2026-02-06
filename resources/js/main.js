@@ -874,6 +874,9 @@ function onWorldLoaderWorkerMessage(e) {
   if(e.data.status)
     $("#status").html(e.data.status);
 
+  if(e.data.name)
+    $("#worldName").html(e.data.name);
+
   if (e.data.tiles) {
     const bufferWidth = 200;
     if (!pixels) {
@@ -1127,9 +1130,6 @@ async function loadWorldFromServer() {
     lastWorldModified = response.headers.get('Last-Modified');
     const blob = await response.blob();
     file = new File([blob], serverConfig.worldFileName || 'world.wld');
-
-    // Update world name in navbar
-    $("#worldName").html(serverConfig.worldFileName.replace('.wld', ''));
 
     reloadWorld();
   } catch (error) {
