@@ -41,14 +41,8 @@
       </div>
 
       <div class="collapse navbar-collapse" id="navbar-top">
-        <ul class="nav navbar-nav">
-          <li><a href="windows.html">Windows</a></li>
-        </ul>
-        <form class="navbar-form navbar-left">
-          <div class="form-group">
-            <input type="file" id="file" name="file" class="form-control" />
-          </div>
-        </form>
+        <p id="worldName" class="navbar-text" style="margin-right: 15px; font-weight: bold;"></p>
+        <p id="playerStats" class="navbar-text" style="margin-right: 15px;"></p>
         <button title="Choose Blocks" class="btn btn-default navbar-btn" data-toggle="modal" data-target="#chooseBlocksModal">Blocks...</button>
         <button title="Find Previous" onclick="previousBlock()" class="btn btn-default navbar-btn"><span class="glyphicon glyphicon-chevron-left"></span></button>
         <button title="Find Next" onclick="nextBlock()" class="btn btn-default navbar-btn"><span class="glyphicon glyphicon-chevron-right"></span></button>
@@ -79,9 +73,6 @@
             </ul>
           </li>
         </ul>
-        <ul class="nav navbar-nav">
-          <li><a href="about.html" target="_blank">Help</a></li>
-        </ul>
       </div>
     </div>
   </nav>
@@ -106,35 +97,6 @@
   </div>
 
   <div class="container-fluid">
-    <div id="help">
-      To get started, open your Terraria world file.
-      <ol>
-        <li>Click <strong>Choose File</strong> above.</li>
-        <li>Browse to the Terraria data directory, usually at:</li>
-        <ul>
-          <li>
-            <strong>Windows</strong>: %USERPROFILE%\Documents\My
-            Games\Terraria\Worlds
-          </li>
-          <li>
-            <strong>Windows (Steam Cloud)</strong>: C:\Program Files (x86)\Steam\userdata\{YOUR_USER_ID}\105600\remote\worlds
-          </li>
-          <li>
-            <strong>MacOS</strong>: ~/Library/Application
-            Support/Terraria/Worlds
-          </li>
-          <li>
-            <strong>MacOS (Steam Cloud)</strong>: ~/Library/Application Support/Steam/userdata/{YOUR_USER_ID}/105600/remote/worlds
-          </li>
-          <li>
-            <strong>Linux</strong>: ~/.local/share/Terraria/Worlds
-          </li>
-          <li>
-            <strong>Linux (Steam Cloud)</strong>: ~/.local/share/Steam/userdata/{YOUR_USER_ID}/105600/remote/worlds
-          </li>
-        </ul>
-      </ol>
-    </div>
     <div id="canvasContainer">
       <div id="panzoomContainer">
         <canvas id="canvas" style="position: absolute; left: 0; top: 0;"></canvas>
@@ -157,16 +119,6 @@
       <div class="collapse navbar-collapse" id="navbar-bottom">
         <p id="status" class="navbar-text navbar-right"></p>
       </div>
-      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4263195580051724"
-     crossorigin="anonymous"></script>
-      <!-- TerraMap Responsive -->
-      <ins class="adsbygoogle"
-          style="display:inline-block;width:728px;height:90px"
-          data-ad-client="ca-pub-4263195580051724"
-          data-ad-slot="9553900295"></ins>
-      <script>
-          (adsbygoogle = window.adsbygoogle || []).push({});
-      </script>
     </div>
   </nav>
 
@@ -185,12 +137,5 @@
   <script src="resources/js/wallKeys.js"></script>
   <script src="resources/js/MapHelper.js"></script>
   <script src="resources/js/main.js"></script>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-P6BJH8276R"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-P6BJH8276R');
-  </script>
 </body>
 </html>

@@ -1,0 +1,10 @@
+.git
+.gitignore
+*.md
+LICENSE
+*.zip
+node_modules
+.DS_Store
+windows.html
+about.html
+ads.txt

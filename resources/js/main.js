@@ -35,22 +35,27 @@ var world;
 var selectionX = 0;
 var selectionY = 0;
 
+// Server configuration
+var serverConfig = {
+  refreshIntervalSeconds: 60,
+  worldFileName: 'world.wld',
+  hasPlayerStatsEnabled: false
+};
+var lastWorldModified = null;
+var refreshIntervalId = null;
+var playerStatsIntervalId = null;
+var isLoading = false;
+
 var panzoom = $("#panzoomContainer").panzoom({
   cursor: "default",
   maxScale: 20,
   increment: 0.3,
 });
 
-$("#status").html("Checking File APIs...");
+$("#status").html("Loading configuration...");
 
-// Check for the various File API support.
-if (window.File && window.FileReader && window.FileList && window.Blob) {
-  $("#file").css("visibility", "visible");
-  $("#file").on('change', fileNameChanged);
-	$("#status").html("Please choose a Terraria .wld file.");
-} else {
-	$("#status").html("The File APIs are not fully supported in this browser.");
-}
+// Initialize: fetch config and start auto-loading
+initializeServer();
 
 resizeCanvases();
 
@@ -854,15 +859,11 @@ function getTileText (tile) {
   return text;
 }
 
-function fileNameChanged (evt) {
-  file = evt.target.files[0];
-
-  $("#help").hide();
-
-  reloadWorld();
-}
-
 function reloadWorld() {
+  if (!file) {
+    $("#status").html("No world file available");
+    return;
+  }
   var worker = new Worker('resources/js/WorldLoader.js');
   worker.addEventListener('message', onWorldLoaderWorkerMessage);
 
@@ -1067,4 +1068,121 @@ function saveMapImage() {
   newCanvas.toBlob(function(blob) {
     saveAs(blob, `${world.name}.png`);
   });
+}
+
+// Server mode functions
+async function initializeServer() {
+  try {
+    // Fetch server configuration
+    const configResponse = await fetch('/api/config');
+    if (configResponse.ok) {
+      serverConfig = await configResponse.json();
+    }
+
+    // Initial world load
+    await loadWorldFromServer();
+
+    // Set up periodic refresh
+    if (serverConfig.refreshIntervalSeconds > 0) {
+      refreshIntervalId = setInterval(checkAndRefreshWorld, serverConfig.refreshIntervalSeconds * 1000);
+    }
+
+    // Set up player stats polling if enabled
+    if (serverConfig.hasPlayerStatsEnabled) {
+      updatePlayerStats();
+      playerStatsIntervalId = setInterval(updatePlayerStats, 10000); // Every 10 seconds
+    }
+  } catch (error) {
+    console.error('Failed to initialize:', error);
+    $("#status").html("Failed to connect to server. Check console for details.");
+  }
+}
+
+async function loadWorldFromServer() {
+  if (isLoading) return;
+  isLoading = true;
+
+  try {
+    $("#status").html("Loading world from server...");
+
+    const headers = {};
+    if (lastWorldModified) {
+      headers['If-Modified-Since'] = lastWorldModified;
+    }
+
+    const response = await fetch('/api/world', { headers });
+
+    if (response.status === 304) {
+      // Not modified
+      $("#status").html("World unchanged");
+      isLoading = false;
+      return;
+    }
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to load world');
+    }
+
+    lastWorldModified = response.headers.get('Last-Modified');
+    const blob = await response.blob();
+    file = new File([blob], serverConfig.worldFileName || 'world.wld');
+
+    // Update world name in navbar
+    $("#worldName").html(serverConfig.worldFileName.replace('.wld', ''));
+
+    reloadWorld();
+  } catch (error) {
+    console.error('Failed to load world:', error);
+    $("#status").html("Error: " + error.message);
+  } finally {
+    isLoading = false;
+  }
+}
+
+async function checkAndRefreshWorld() {
+  try {
+    const response = await fetch('/api/world/status');
+    if (!response.ok) return;
+
+    const status = await response.json();
+    const serverModified = new Date(status.lastModified).toUTCString();
+
+    if (serverModified !== lastWorldModified) {
+      await loadWorldFromServer();
+    }
+  } catch (error) {
+    console.error('Failed to check world status:', error);
+  }
+}
+
+async function updatePlayerStats() {
+  try {
+    const response = await fetch('/api/players');
+    if (!response.ok) return;
+
+    const data = await response.json();
+
+    if (!data.configured) {
+      $("#playerStats").html("");
+      return;
+    }
+
+    let statsText = "";
+    if (data.online === -1) {
+      // Server is up but player count unknown
+      statsText = "Server Online";
+    } else if (data.online === 0 && !data.serverOnline) {
+      statsText = "Server Offline";
+    } else {
+      statsText = `Players: ${data.online}/${data.maxPlayers}`;
+      if (data.players && data.players.length > 0) {
+        statsText += ` (${data.players.map(p => p.nickname || p.username || p).join(', ')})`;
+      }
+    }
+
+    $("#playerStats").html(statsText);
+  } catch (error) {
+    console.error('Failed to update player stats:', error);
+  }
 }
